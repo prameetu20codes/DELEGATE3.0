@@ -1,7 +1,7 @@
 # Harness values file. Harness renders the manifests in this folder with Go
 # templating, resolving <+...> expressions at deploy time.
 name: sample-app
-replicas: 1
+replicas: 2
 
 # Resolved from the Service's primary artifact source (Docker Hub).
 image: <+artifact.image>
