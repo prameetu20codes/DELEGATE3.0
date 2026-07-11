@@ -47,13 +47,21 @@ pipeline:
                     image: node:20-alpine
                     shell: Sh
                     command: |
-                      cd sample-app/app
+                      # Work whether the repo root is the bundle root or sample-app/.
+                      if [ -d sample-app/app ]; then cd sample-app/app;
+                      elif [ -d app ]; then cd app; fi
+                      echo "Running tests in: $(pwd)"
                       node test.js
+                      status=$?
+                      echo "Report written to: $(pwd)/junit.xml"
+                      ls -l junit.xml || true
+                      exit $status
                     reports:
                       type: JUnit
                       spec:
+                        # Glob so the report is found regardless of subfolder depth.
                         paths:
-                          - sample-app/app/junit.xml
+                          - "**/junit.xml"
               - step:
                   identifier: build_push
                   name: Build and Push Image
