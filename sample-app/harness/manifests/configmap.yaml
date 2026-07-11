@@ -1,9 +1,8 @@
 # App ConfigMap (env vars for the web container).
-# Data is inlined here (not read from .Values.config) so this file always
-# renders, regardless of what the Service's values.yaml contains. If you later
-# want these values driven by values.yaml, confirm the effective values file
-# has a top-level `config:` map, then switch the data block back to:
-#   {{- range $key, $value := .Values.config}} ...
+# Data is inlined here (not read from values) so this file always renders,
+# regardless of what the Service's values file contains. If you later want these
+# driven by values, confirm the effective values file has a top-level config map
+# and switch the data block to a range over that map.
 apiVersion: v1
 kind: ConfigMap
 metadata:
