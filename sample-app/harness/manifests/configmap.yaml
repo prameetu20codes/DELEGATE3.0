@@ -1,17 +1,12 @@
 # App ConfigMap (env vars for the web container).
-# Data is inlined here (not read from values) so this file always renders,
-# regardless of what the Service's values file contains. If you later want these
-# driven by values, confirm the effective values file has a top-level config map
-# and switch the data block to a range over that map.
+# Data is inlined so this file renders regardless of the Service values file.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{.Values.name}}-config
-  # skip-versioning keeps the literal name so the Deployment's envFrom resolves
-  # (Harness resource versioning does NOT rewrite envFrom.configMapRef).
   annotations:
     harness.io/skip-versioning: "true"
 data:
   APP_MESSAGE: "Hello from Arnold L3.0"
-  GREETING_COLOR: "#0263f4"
+  GREETING_COLOR: "dodgerblue"
   LOG_LEVEL: "info"

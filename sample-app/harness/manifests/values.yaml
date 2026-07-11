@@ -22,7 +22,9 @@ sidecarImage: nginx:stable
 # Values surfaced into the app ConfigMap (consumed as env vars).
 config:
   APP_MESSAGE: "Hello from Arnold L3.0"
-  GREETING_COLOR: "#0263f4"
+  # Avoid a leading '#' here; a non-YAML-aware comment strip can break the
+  # rendered ConfigMap. Use a named CSS color (or move the '#' into server.js).
+  GREETING_COLOR: "dodgerblue"
   LOG_LEVEL: "info"
 
 hpa:
