@@ -37,6 +37,8 @@ service:
                   branch: main
                   paths:
                     - sample-app/harness/manifests/configmap.yaml
+                    - sample-app/harness/manifests/proxy-configmap.yaml
+                    - sample-app/harness/manifests/secret.yaml
                     - sample-app/harness/manifests/deployment.yaml
                     - sample-app/harness/manifests/service.yaml
                     - sample-app/harness/manifests/hpa.yaml

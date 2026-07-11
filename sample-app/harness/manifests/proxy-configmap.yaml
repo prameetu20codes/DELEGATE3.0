@@ -1,0 +1,18 @@
+# Proxy ConfigMap (nginx sidecar config, mounted as a volume).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Values.name}}-proxy-config
+  annotations:
+    harness.io/skip-versioning: "true"
+data:
+  default.conf: |
+    server {
+      listen {{.Values.servicePort}};
+      location /healthz { return 200 'ok'; add_header Content-Type text/plain; }
+      location / {
+        proxy_pass http://127.0.0.1:{{.Values.appPort}};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+    }
