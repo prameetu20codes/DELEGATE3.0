@@ -24,11 +24,10 @@ spec:
         image: {{.Values.image}}
         ports:
         - containerPort: {{.Values.appPort}}
-        # NOTE: intentionally does NOT reference .Values.config, so the Deployment
-        # always renders even if the values file has no config block. The app
-        # falls back to its built-in defaults (see server.js). To feed app config
-        # in, add the config block to values.yaml and switch this env list back to
-        # an envFrom referencing the sample-app-config ConfigMap.
+        # App config comes from the sample-app-config ConfigMap (env vars).
+        envFrom:
+        - configMapRef:
+            name: {{.Values.name}}-config
         env:
         - name: PORT
           value: "{{.Values.appPort}}"
