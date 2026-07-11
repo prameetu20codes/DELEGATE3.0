@@ -1,7 +1,7 @@
 # Harness values file. Harness renders the manifests in this folder with Go
 # templating, resolving <+...> expressions at deploy time.
 name: sample-app
-replicas: 2
+replicas: 1
 
 # Resolved from the Service's primary artifact source (Docker Hub).
 image: <+artifact.image>
@@ -17,7 +17,7 @@ serviceType: ClusterIP
 servicePort: 80          # nginx sidecar port exposed by the Service
 appPort: 8080            # Node app port (proxied to by the sidecar)
 
-sidecarImage: nginx:1.27-alpine
+sidecarImage: nginx:stable
 
 # Values surfaced into the app ConfigMap (consumed as env vars).
 config:
