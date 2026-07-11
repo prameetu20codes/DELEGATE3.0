@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Values.name}}-deployment
+  labels:
+    app: {{.Values.name}}
+spec:
+  replicas: {{int .Values.replicas}}
+  selector:
+    matchLabels:
+      app: {{.Values.name}}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.name}}
+    spec:
+      {{- if .Values.dockercfg}}
+      imagePullSecrets:
+      - name: {{.Values.name}}-dockercfg
+      {{- end}}
+      containers:
+      # Primary container: the image built and pushed by the CI stage.
+      - name: web
+        image: {{.Values.image}}
+        ports:
+        - containerPort: {{.Values.appPort}}
+        envFrom:
+        - configMapRef:
+            name: {{.Values.name}}-config
+        env:
+        - name: PORT
+          value: "{{.Values.appPort}}"
+        - name: RELEASE_NAME
+          value: {{.Values.releaseName}}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: {{.Values.appPort}}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+      # Sidecar container: public nginx image acting as a reverse proxy.
+      - name: proxy
+        image: {{.Values.sidecarImage}}
+        ports:
+        - containerPort: {{.Values.servicePort}}
+        volumeMounts:
+        - name: proxy-config
+          mountPath: /etc/nginx/conf.d
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      volumes:
+      - name: proxy-config
+        configMap:
+          name: {{.Values.name}}-proxy-config

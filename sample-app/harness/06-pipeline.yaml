@@ -1,0 +1,110 @@
+# CI + CD pipeline:
+#   Stage 1 (CI)  -> runs a unit test, then builds & pushes the image to Docker Hub
+#                    on the build delegate's cluster (namespace harness-delegate-build).
+#   Stage 2 (CD)  -> rolling deploy of the multi-container app to the dev namespace
+#                    via the deploy delegate.
+#
+# Placeholders:
+#   <ORG_ID> <PROJECT_ID>  Harness org / project identifiers
+#   <DOCKERHUB_USER>       Docker Hub namespace (image = <DOCKERHUB_USER>/sample-app)
+#   <GIT_REPO_NAME>        repo you pushed this bundle to
+pipeline:
+  identifier: sample_app_cicd
+  name: Sample App CICD
+  orgIdentifier: <ORG_ID>
+  projectIdentifier: <PROJECT_ID>
+  properties:
+    ci:
+      codebase:
+        connectorRef: github_connector
+        repoName: <GIT_REPO_NAME>
+        build:
+          type: branch
+          spec:
+            branch: main
+  stages:
+    - stage:
+        identifier: build
+        name: Build and Push
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: k8s_build_connector
+              namespace: harness-delegate-build
+              automountServiceAccountToken: true
+              os: Linux
+          execution:
+            steps:
+              - step:
+                  identifier: unit_test
+                  name: Unit Test
+                  type: Run
+                  spec:
+                    connectorRef: dockerhub
+                    image: node:20-alpine
+                    shell: Sh
+                    command: |
+                      cd sample-app/app
+                      node test.js
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - sample-app/app/junit.xml
+              - step:
+                  identifier: build_push
+                  name: Build and Push Image
+                  type: BuildAndPushDockerRegistry
+                  spec:
+                    connectorRef: dockerhub
+                    repo: <DOCKERHUB_USER>/sample-app
+                    tags:
+                      - <+pipeline.sequenceId>
+                      - latest
+                    dockerfile: sample-app/app/Dockerfile
+                    context: sample-app/app
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: MarkAsFailure
+    - stage:
+        identifier: deploy_dev
+        name: Deploy Dev
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: sample_app
+          environment:
+            environmentRef: dev
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: k8s_dev
+          execution:
+            steps:
+              - step:
+                  identifier: rollout
+                  name: Rolling Deploy
+                  type: K8sRollingDeploy
+                  spec:
+                    skipDryRun: false
+                    pruningEnabled: false
+                  timeout: 10m
+            rollbackSteps:
+              - step:
+                  identifier: rollback
+                  name: Rolling Rollback
+                  type: K8sRollingRollback
+                  spec: {}
+                  timeout: 10m
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback

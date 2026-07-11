@@ -1,0 +1,68 @@
+# Four connectors. Create each `connector:` block separately via MCP/UI.
+#
+# Placeholders to replace:
+#   <DOCKERHUB_USER>   your Docker Hub username (also the image namespace)
+#   <GIT_ORG_URL>      e.g. https://github.com/your-org
+#   <GIT_USER>         your GitHub username
+#
+# Delegate selectors reference the two delegates already running in your cluster:
+#   kubernetes-delegate-linux-ng  -> deploy delegate (namespace harness-delegate-ng)
+#   container-build (tag)         -> build delegate (namespace harness-delegate-build)
+---
+connector:
+  name: Docker Hub
+  identifier: dockerhub
+  type: DockerRegistry
+  spec:
+    dockerRegistryUrl: https://index.docker.io/v2/
+    providerType: DockerHub
+    auth:
+      type: UsernamePassword
+      spec:
+        username: <DOCKERHUB_USER>
+        passwordRef: dockerhub_pat
+    executeOnDelegate: false
+---
+connector:
+  name: GitHub
+  identifier: github_connector
+  type: Github
+  spec:
+    url: <GIT_ORG_URL>
+    type: Account
+    authentication:
+      type: Http
+      spec:
+        type: UsernameToken
+        spec:
+          username: <GIT_USER>
+          tokenRef: github_pat
+    apiAccess:
+      type: Token
+      spec:
+        tokenRef: github_pat
+    executeOnDelegate: false
+---
+# Deploy cluster connector (used by the CD stage). Inherits credentials from the
+# in-cluster deploy delegate.
+connector:
+  name: K8s Deploy Cluster
+  identifier: k8s_connector
+  type: K8sCluster
+  spec:
+    credential:
+      type: InheritFromDelegate
+    delegateSelectors:
+      - kubernetes-delegate-linux-ng
+---
+# Build cluster connector (used by the CI stage build farm). Inherits from the
+# build delegate (tagged container-build).
+connector:
+  name: K8s Build Cluster
+  identifier: k8s_build_connector
+  type: K8sCluster
+  spec:
+    credential:
+      type: InheritFromDelegate
+    delegateSelectors:
+      - container-build

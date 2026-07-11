@@ -1,0 +1,31 @@
+# Harness values file. Harness renders the manifests in this folder with Go
+# templating, resolving <+...> expressions at deploy time.
+name: sample-app
+replicas: 2
+
+# Resolved from the Service's primary artifact source (Docker Hub).
+image: <+artifact.image>
+# Harness injects a generated image pull secret name here when the artifact
+# connector has credentials. Safe to leave for public images too.
+dockercfg: <+artifact.imagePullSecret>
+
+# Populated from the Infrastructure Definition at runtime.
+namespace: <+infra.namespace>
+releaseName: <+infra.releaseName>
+
+serviceType: ClusterIP
+servicePort: 80          # nginx sidecar port exposed by the Service
+appPort: 8080            # Node app port (proxied to by the sidecar)
+
+sidecarImage: nginx:1.27-alpine
+
+# Values surfaced into the app ConfigMap (consumed as env vars).
+config:
+  APP_MESSAGE: "Hello from Arnold L3.0"
+  GREETING_COLOR: "#0263f4"
+  LOG_LEVEL: "info"
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70

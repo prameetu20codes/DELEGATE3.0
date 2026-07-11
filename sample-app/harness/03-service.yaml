@@ -1,0 +1,45 @@
+# Harness Service: what gets deployed (artifact + manifests).
+# Placeholders:
+#   <ORG_ID> <PROJECT_ID>  your Harness org / project identifiers
+#   <DOCKERHUB_USER>       image namespace, e.g. myuser -> myuser/sample-app
+#   <GIT_REPO_NAME>        the repo you push this bundle to, e.g. delegate-sample-app
+service:
+  name: Sample App
+  identifier: sample_app
+  orgIdentifier: <ORG_ID>
+  projectIdentifier: <PROJECT_ID>
+  serviceDefinition:
+    type: Kubernetes
+    spec:
+      artifacts:
+        primary:
+          primaryArtifactRef: docker_image
+          sources:
+            - identifier: docker_image
+              type: DockerRegistry
+              spec:
+                connectorRef: dockerhub
+                imagePath: <DOCKERHUB_USER>/sample-app
+                # Same tag the CI stage pushes, so the deploy uses the freshly
+                # built image in the same run.
+                tag: <+pipeline.sequenceId>
+      manifests:
+        - manifest:
+            identifier: sample_app_manifests
+            type: K8sManifest
+            spec:
+              store:
+                type: Github
+                spec:
+                  connectorRef: github_connector
+                  gitFetchType: Branch
+                  repoName: <GIT_REPO_NAME>
+                  branch: main
+                  paths:
+                    - sample-app/harness/manifests/configmap.yaml
+                    - sample-app/harness/manifests/deployment.yaml
+                    - sample-app/harness/manifests/service.yaml
+                    - sample-app/harness/manifests/hpa.yaml
+              valuesPaths:
+                - sample-app/harness/manifests/values.yaml
+              skipResourceVersioning: false

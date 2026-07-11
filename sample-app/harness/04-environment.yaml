@@ -1,0 +1,13 @@
+# Harness Environment: a logical deployment target (dev).
+environment:
+  name: Dev
+  identifier: dev
+  orgIdentifier: <ORG_ID>
+  projectIdentifier: <PROJECT_ID>
+  type: PreProduction
+  tags:
+    tier: dev
+  variables:
+    - name: domain
+      type: String
+      value: dev.sample-app.local

@@ -1,0 +1,17 @@
+# Harness Infrastructure Definition: where the workload runs. Deploys into the
+# cluster via the deploy delegate connector. Change the namespace if you like;
+# it is created if missing only when the cluster/RBAC allows it (the delegate
+# here has cluster-admin, so a new namespace is fine).
+infrastructureDefinition:
+  name: K8s Dev
+  identifier: k8s_dev
+  orgIdentifier: <ORG_ID>
+  projectIdentifier: <PROJECT_ID>
+  environmentRef: dev
+  deploymentType: Kubernetes
+  type: KubernetesDirect
+  spec:
+    connectorRef: k8s_connector
+    namespace: sample-app-dev
+    releaseName: release-<+INFRA_KEY_SHORT_ID>
+  allowSimultaneousDeployments: false

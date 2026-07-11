@@ -1,0 +1,27 @@
+# Two ConfigMaps: one for the app's env vars, one holding the nginx sidecar
+# proxy config that is mounted as a volume. Names are release-suffixed so each
+# deployment rolls the pods when config changes (Harness versions ConfigMaps).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Values.name}}-config
+data:
+{{- range $key, $value := .Values.config}}
+  {{$key}}: {{$value | quote}}
+{{- end}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Values.name}}-proxy-config
+data:
+  default.conf: |
+    server {
+      listen {{.Values.servicePort}};
+      location /healthz { return 200 'ok'; add_header Content-Type text/plain; }
+      location / {
+        proxy_pass http://127.0.0.1:{{.Values.appPort}};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+    }
