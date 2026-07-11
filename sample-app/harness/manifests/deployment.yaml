@@ -1,3 +1,18 @@
+{{- if .Values.dockercfg}}
+# Image pull secret materialized from the Docker Hub connector credentials.
+# Only rendered when .Values.dockercfg is set (i.e. the artifact connector has
+# credentials). Harmless for a public image; required for a private one.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{.Values.name}}-dockercfg
+  annotations:
+    harness.io/skip-versioning: "true"
+data:
+  .dockercfg: {{.Values.dockercfg}}
+type: kubernetes.io/dockercfg
+---
+{{- end}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

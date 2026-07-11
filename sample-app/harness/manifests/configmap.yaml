@@ -5,6 +5,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{.Values.name}}-config
+  # Keep the literal name so the Deployment's envFrom reference resolves.
+  # (Harness resource versioning does NOT rewrite envFrom.configMapRef.)
+  annotations:
+    harness.io/skip-versioning: "true"
 data:
 {{- range $key, $value := .Values.config}}
   {{$key}}: {{$value | quote}}
@@ -14,6 +18,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{.Values.name}}-proxy-config
+  annotations:
+    harness.io/skip-versioning: "true"
 data:
   default.conf: |
     server {

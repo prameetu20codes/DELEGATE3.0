@@ -1,0 +1,11 @@
+---
+description: User prefers to run all commands themselves; the agent must never execute anything on their local machine or cluster.
+alwaysApply: true
+---
+
+# Do Not Execute — Provide Commands Only
+
+- NEVER run commands that act on the user's local environment, machine, or clusters (e.g. `kubectl`, `git push`, `git commit`, `docker`, `helm`, deployments, or any side-effecting shell command).
+- Instead, ALWAYS provide the exact command(s) for the user to run themselves, clearly formatted in a code block.
+- File edits inside the workspace are allowed (the user reviews them), but do not apply or execute them against any live system.
+- If a task would normally require running something, stop and hand the user the command with a short explanation of what it does and what to expect.
