@@ -39,14 +39,21 @@ spec:
         image: {{.Values.image}}
         ports:
         - containerPort: {{.Values.appPort}}
-        envFrom:
-        - configMapRef:
-            name: {{.Values.name}}-config
+        # UNBLOCK: app config is inlined from values instead of envFrom the
+        # sample-app-config ConfigMap. The only ConfigMap this Deployment now
+        # references is sample-app-proxy-config (mounted as a volume below).
+        # Revisit the sample-app-config / envFrom issue separately.
         env:
         - name: PORT
           value: "{{.Values.appPort}}"
         - name: RELEASE_NAME
           value: {{.Values.releaseName}}
+        - name: APP_MESSAGE
+          value: {{.Values.config.APP_MESSAGE | quote}}
+        - name: GREETING_COLOR
+          value: {{.Values.config.GREETING_COLOR | quote}}
+        - name: LOG_LEVEL
+          value: {{.Values.config.LOG_LEVEL | quote}}
         readinessProbe:
           httpGet:
             path: /readyz
