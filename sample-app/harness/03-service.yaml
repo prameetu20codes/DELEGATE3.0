@@ -39,9 +39,13 @@ service:
                     - sample-app/harness/manifests/configmap.yaml
                     - sample-app/harness/manifests/proxy-configmap.yaml
                     - sample-app/harness/manifests/secret.yaml
+                    - sample-app/harness/manifests/secret-test.yaml
                     - sample-app/harness/manifests/deployment.yaml
                     - sample-app/harness/manifests/service.yaml
                     - sample-app/harness/manifests/hpa.yaml
               valuesPaths:
                 - sample-app/harness/manifests/values.yaml
-              skipResourceVersioning: false
+              # Disable versioning so ConfigMap/Secret names stay literal and the
+              # Deployment's envFrom (sample-app-config) resolves. Harness does not
+              # rewrite envFrom.configMapRef references when versioning is on.
+              skipResourceVersioning: true
