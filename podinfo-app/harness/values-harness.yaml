@@ -1,7 +1,14 @@
 # Harness values override for the Helm chart. Harness resolves <+...> expressions
-# in THIS file (not in the chart) and passes it to `helm ... -f` on top of the
-# chart's own values.yaml. This is how the Service artifact flows into Native Helm.
+# in THIS file (not in the chart) and passes it to `helm ... -f` ON TOP OF the
+# chart's own values.yaml. This is how the Service artifact flows into Native Helm,
+# and (being the last -f) it wins over the chart defaults.
 #
-# <+artifact.image> resolves to the full "repo:tag" of the primary artifact
-# source (stefanprodan/podinfo:6.14.0), so it overrides the chart's `image`.
-image: <+artifact.image>
+#   <+artifact.imagePath> -> the image repo path, e.g. stefanprodan/podinfo
+#   <+artifact.tag>       -> the pinned tag from the Service artifact, e.g. 6.14.0
+#
+# These override the sentinel `tag: SET_BY_HARNESS` in chart/values.yaml, so the
+# deployed image is whatever the Service artifact points to — the single source
+# of truth. (You could also use the combined <+artifact.image> = repo:tag.)
+image:
+  repository: <+artifact.imagePath>
+  tag: <+artifact.tag>

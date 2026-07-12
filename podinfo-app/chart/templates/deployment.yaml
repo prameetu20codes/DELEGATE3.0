@@ -21,8 +21,8 @@ spec:
     spec:
       containers:
       - name: podinfo
-        image: {{ .Values.image | quote }}
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         - ./podinfo
         - --port={{ .Values.httpPort }}

@@ -93,9 +93,12 @@ git push -u origin podinfo-app
 
 ## (Optional) Validate the chart locally before pushing
 
+The chart's default `image.tag` is the sentinel `SET_BY_HARNESS` (the artifact is
+the source of truth), so pass a tag when rendering/installing outside Harness:
+
 ```bash
 helm lint podinfo-app/chart
-helm template podinfo podinfo-app/chart -f podinfo-app/chart/values.yaml
+helm template podinfo podinfo-app/chart --set image.tag=6.14.0
 ```
 
 ## Step 2 — Create the Harness resources (in order)
@@ -121,13 +124,20 @@ pulling `stefanprodan/podinfo:6.14.0`.
 ```bash
 kubectl get all,configmap,hpa -n podinfo-dev
 helm list -n podinfo-dev                       # confirm the native Helm release
+# Prove the Harness artifact override won (should print stefanprodan/podinfo:6.14.0,
+# NOT ...:SET_BY_HARNESS). If you see the sentinel, the override wasn't applied.
+kubectl get deploy podinfo-deployment -n podinfo-dev \
+  -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 kubectl port-forward -n podinfo-dev svc/podinfo-svc 8080:80
 # then open http://localhost:8080  (podinfo UI, /healthz, /readyz, /metrics)
 ```
 
 ## Bumping the image later
 
-The tag is pinned in `01-service.yaml`. To deploy a newer podinfo, edit
-`tag: 6.14.0` to the version you want and re-run the pipeline (or switch the
-artifact `tag` to a runtime input to choose at run time). The chart's own default
-`image` in `chart/values.yaml` is only used if you run `helm` outside Harness.
+The tag is pinned in `01-service.yaml` (the Service artifact) and flows into the
+chart through `harness/values-harness.yaml`. To deploy a newer podinfo, edit
+`tag: 6.14.0` in `01-service.yaml` to the version you want and re-run the pipeline
+(or switch the artifact `tag` to a runtime input to choose at run time). The
+chart's `image.tag` default is the sentinel `SET_BY_HARNESS`, so the image is
+*always* whatever the Harness artifact resolves to — never a value baked into the
+chart.
