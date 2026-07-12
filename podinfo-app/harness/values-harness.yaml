@@ -1,0 +1,7 @@
+# Harness values override for the Helm chart. Harness resolves <+...> expressions
+# in THIS file (not in the chart) and passes it to `helm ... -f` on top of the
+# chart's own values.yaml. This is how the Service artifact flows into Native Helm.
+#
+# <+artifact.image> resolves to the full "repo:tag" of the primary artifact
+# source (stefanprodan/podinfo:6.14.0), so it overrides the chart's `image`.
+image: <+artifact.image>

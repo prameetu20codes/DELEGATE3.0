@@ -1,0 +1,49 @@
+# Harness Service: what gets deployed (public artifact + Helm chart).
+# Deployment type is NATIVE HELM — Harness runs the `helm` binary to install the
+# chart, overriding the image with the Service artifact. No CI/build today.
+# Reuses the connectors already created for sample-app.
+#
+# Placeholders:
+#   <ORG_ID> <PROJECT_ID>  your Harness org / project identifiers
+#   <GIT_REPO_NAME>        the repo you push this bundle to, e.g. delegate-sample-app
+service:
+  name: Podinfo App
+  identifier: podinfo_app
+  orgIdentifier: <ORG_ID>
+  projectIdentifier: <PROJECT_ID>
+  serviceDefinition:
+    type: NativeHelm
+    spec:
+      artifacts:
+        primary:
+          primaryArtifactRef: podinfo_image
+          sources:
+            - identifier: podinfo_image
+              type: DockerRegistry
+              spec:
+                # Reuse the existing Docker Hub connector. The image is public,
+                # so credentials are only used for the registry API lookup.
+                connectorRef: dockerhub
+                imagePath: stefanprodan/podinfo
+                # Fixed, already-published tag — nothing is built in this pipeline.
+                tag: 6.14.0
+      manifests:
+        - manifest:
+            identifier: podinfo_chart
+            type: HelmChart
+            spec:
+              store:
+                type: Github
+                spec:
+                  connectorRef: github_connector
+                  gitFetchType: Branch
+                  repoName: <GIT_REPO_NAME>
+                  branch: main
+                  # Folder that contains Chart.yaml (the Helm chart root).
+                  folderPath: podinfo-app/chart
+              # Harness-resolved override passed to `helm -f`; injects the artifact
+              # image into the chart. Layered on top of chart/values.yaml.
+              valuesPaths:
+                - podinfo-app/harness/values-harness.yaml
+              helmVersion: V3
+              skipResourceVersioning: false

@@ -1,0 +1,14 @@
+# Harness Environment: a logical deployment target (dev) for podinfo.
+environment:
+  name: Podinfo Dev
+  identifier: podinfo_dev
+  orgIdentifier: <ORG_ID>
+  projectIdentifier: <PROJECT_ID>
+  type: PreProduction
+  tags:
+    tier: dev
+    app: podinfo
+  variables:
+    - name: domain
+      type: String
+      value: dev.podinfo.local

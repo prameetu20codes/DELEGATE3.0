@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-deployment
+  labels:
+    app: {{ .Chart.Name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.metricsPort | quote }}
+    spec:
+      containers:
+      - name: podinfo
+        image: {{ .Values.image | quote }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+        - ./podinfo
+        - --port={{ .Values.httpPort }}
+        - --port-metrics={{ .Values.metricsPort }}
+        - --level=info
+        ports:
+        - name: http
+          containerPort: {{ .Values.httpPort }}
+        - name: http-metrics
+          containerPort: {{ .Values.metricsPort }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Chart.Name }}-config
+        env:
+        - name: RELEASE_NAME
+          value: {{ .Release.Name | quote }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}

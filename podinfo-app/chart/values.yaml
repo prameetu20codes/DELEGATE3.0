@@ -1,0 +1,36 @@
+# Default chart values. Harness overrides `image` at deploy time from the Service
+# artifact via harness/values-harness.yaml (<+artifact.image>). Everything else
+# can be tuned here or via a Harness values override.
+replicaCount: 2
+
+# Full image reference (repo:tag). Overridden by Harness to <+artifact.image>.
+image: stefanprodan/podinfo:6.14.0
+imagePullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80          # Service port
+
+httpPort: 9898      # podinfo HTTP port (container)
+metricsPort: 9797   # podinfo Prometheus metrics port
+
+# Rendered into the app ConfigMap and consumed as PODINFO_* env vars.
+config:
+  PODINFO_UI_MESSAGE: "Hello from Arnold L3.0 - podinfo (Native Helm)"
+  # Named color, never a leading '#' hex value (KT issue #7).
+  PODINFO_UI_COLOR: "royalblue"
+  PODINFO_LEVEL: "info"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70

@@ -1,0 +1,17 @@
+# Harness Infrastructure Definition: where the workload runs. Deploys into the
+# cluster via the existing deploy delegate connector (k8s_connector). Namespace
+# is created if missing when cluster/RBAC allows (the deploy delegate has
+# cluster-admin, so a fresh namespace is fine).
+infrastructureDefinition:
+  name: Podinfo K8s Dev
+  identifier: podinfo_k8s_dev
+  orgIdentifier: <ORG_ID>
+  projectIdentifier: <PROJECT_ID>
+  environmentRef: podinfo_dev
+  deploymentType: NativeHelm
+  type: KubernetesDirect
+  spec:
+    connectorRef: k8s_connector
+    namespace: podinfo-dev
+    releaseName: release-<+INFRA_KEY_SHORT_ID>
+  allowSimultaneousDeployments: false

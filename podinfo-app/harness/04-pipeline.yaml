@@ -1,0 +1,50 @@
+# Deploy-only pipeline using NATIVE HELM (NO CI/build today).
+#   Stage 1 (CD) -> `helm upgrade --install` of the podinfo chart into the dev
+#                   namespace via the existing deploy delegate (k8s_connector).
+#
+# The image (stefanprodan/podinfo:6.14.0) already exists on Docker Hub, so there
+# is nothing to build. The Service pins that tag and injects it into the chart.
+#
+# Placeholders:
+#   <ORG_ID> <PROJECT_ID>  Harness org / project identifiers
+pipeline:
+  identifier: podinfo_deploy
+  name: Podinfo Deploy
+  orgIdentifier: <ORG_ID>
+  projectIdentifier: <PROJECT_ID>
+  stages:
+    - stage:
+        identifier: deploy_dev
+        name: Deploy Dev
+        type: Deployment
+        spec:
+          deploymentType: NativeHelm
+          service:
+            serviceRef: podinfo_app
+          environment:
+            environmentRef: podinfo_dev
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: podinfo_k8s_dev
+          execution:
+            steps:
+              - step:
+                  identifier: helm_deploy
+                  name: Helm Deploy
+                  type: HelmDeploy
+                  spec:
+                    skipDryRun: false
+                  timeout: 10m
+            rollbackSteps:
+              - step:
+                  identifier: helm_rollback
+                  name: Helm Rollback
+                  type: HelmRollback
+                  spec: {}
+                  timeout: 10m
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback

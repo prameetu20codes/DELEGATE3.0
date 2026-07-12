@@ -1,0 +1,9 @@
+apiVersion: v2
+name: podinfo
+description: Deploy-only Helm chart for the public podinfo image, deployed via Harness Native Helm (L3.0).
+type: application
+# Chart version — bump when the templates change.
+version: 0.1.0
+# The default app version; the running image tag is overridden by Harness from
+# the Service artifact (<+artifact.image>).
+appVersion: "6.14.0"
