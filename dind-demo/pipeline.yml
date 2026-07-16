@@ -1,25 +1,38 @@
 # Harness CI pipeline: DinD background step + Run step that builds & pushes to Docker Hub.
-# Self-hosted VM infrastructure is used because DinD requires a privileged container
-# (Harness Cloud does not allow privileged/DinD).
+#
+# This version CLONES the git repo (which contains many Dockerfiles), runs a discovery
+# step to locate the right one, then builds & pushes it. Self-hosted VM infrastructure
+# is used because DinD requires a privileged container (Harness Cloud disallows it).
 #
 # Replace the <PLACEHOLDERS> before importing:
-#   <ORG>       - Harness org identifier (e.g. default)
-#   <PROJECT>   - Harness project identifier
-#   <POOL_NAME> - matches the `name:` in pool.yml (e.g. dind-pool)
-#   <REPO>      - Docker Hub repo under prameet2025 (e.g. myapp)
+#   <ORG>          - Harness org identifier (e.g. default)
+#   <PROJECT>      - Harness project identifier
+#   <POOL_NAME>    - matches the `name:` in pool.yml (e.g. dind-pool)
+#   <GIT_CONNECTOR>- Harness Git connector identifier for github.com/prameetu20codes/DELEGATE3.0
+#
+# Which Dockerfile gets built is controlled by TARGET_DIR (default: dind-demo).
 pipeline:
   identifier: dind_build_push
   name: DinD Build and Push
   orgIdentifier: <ORG>
   projectIdentifier: <PROJECT>
   tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: <GIT_CONNECTOR>
+        repoName: DELEGATE3.0
+        build:
+          type: branch
+          spec:
+            branch: main
   stages:
     - stage:
         identifier: build_and_push
         name: Build and Push
         type: CI
         spec:
-          cloneCodebase: false
+          cloneCodebase: true
           infrastructure:
             type: VM
             spec:
@@ -41,6 +54,33 @@ pipeline:
                     entrypoint:
                       - dockerd-entrypoint.sh
                     privileged: true
+                    envVariables:
+                      DOCKER_TLS_CERTDIR: ""
+              - step:
+                  identifier: find_dockerfile
+                  name: Find Dockerfile
+                  type: Run
+                  spec:
+                    image: alpine:3.20
+                    shell: Sh
+                    envVariables:
+                      TARGET_DIR: dind-demo
+                    command: |
+                      ALL=$(find . -type f \
+                              \( -iname 'Dockerfile' -o -iname 'Dockerfile.*' -o -iname '*.dockerfile' \) \
+                              -not -path './.git/*' | sed 's|^\./||' | sort)
+                      echo "Dockerfiles found:"; echo "$ALL" | sed 's/^/   - /'
+                      DOCKERFILE=$(echo "$ALL" | grep "^${TARGET_DIR%/}/" | head -n 1)
+                      if [ -z "$DOCKERFILE" ]; then
+                        echo "ERROR: no Dockerfile under TARGET_DIR=$TARGET_DIR" >&2; exit 1
+                      fi
+                      CONTEXT=$(dirname "$DOCKERFILE")
+                      echo "Selected: $DOCKERFILE (context: $CONTEXT)"
+                      export DOCKERFILE
+                      export CONTEXT
+                    outputVariables:
+                      - name: DOCKERFILE
+                      - name: CONTEXT
               - step:
                   identifier: build_push
                   name: Build and Push Image
@@ -50,12 +90,17 @@ pipeline:
                     shell: Sh
                     command: |
                       until docker info >/dev/null 2>&1; do echo "waiting for docker..."; sleep 1; done
+                      DOCKERFILE="<+steps.find_dockerfile.output.outputVariables.DOCKERFILE>"
+                      CONTEXT="<+steps.find_dockerfile.output.outputVariables.CONTEXT>"
+                      echo "Building $DOCKERFILE (context: $CONTEXT)"
                       echo "$DOCKER_PASSWORD" | docker login -u prameet2025 --password-stdin
                       docker build --build-arg BUILD_TIME="$(date -u +%FT%TZ)" \
-                        -t prameet2025/<REPO>:<+pipeline.sequenceId> \
-                        -t prameet2025/<REPO>:latest .
-                      docker push prameet2025/<REPO>:<+pipeline.sequenceId>
-                      docker push prameet2025/<REPO>:latest
+                        -f "$DOCKERFILE" \
+                        -t prameet2025/dind-test:<+pipeline.sequenceId> \
+                        -t prameet2025/dind-test:latest \
+                        "$CONTEXT"
+                      docker push prameet2025/dind-test:<+pipeline.sequenceId>
+                      docker push prameet2025/dind-test:latest
                     envVariables:
                       DOCKER_HOST: tcp://localhost:2375
                       DOCKER_PASSWORD: <+secrets.getValue("docker_pat")>

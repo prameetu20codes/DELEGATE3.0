@@ -17,6 +17,7 @@ something real to build and publish.
 | [`Dockerfile`](./Dockerfile) | Defines the image that gets built and pushed |
 | [`hello.sh`](./hello.sh) | Entrypoint script baked into the image |
 | [`test-local.sh`](./test-local.sh) | Build/push the image from your own machine (pre-flight test) |
+| [`find-dockerfile.sh`](./find-dockerfile.sh) | Discovery script: locates the right Dockerfile in a repo with many |
 | [`pipeline.yml`](./pipeline.yml) | The Harness CI pipeline (import-ready) |
 | [`pool.yml`](./pool.yml) | Self-hosted VM runner pool config (defines `poolName`) |
 | `README.md` | This document |
@@ -99,6 +100,38 @@ Key design choices:
   `Dockerfile`.
 
 ---
+
+## Selecting the right Dockerfile (repo has many)
+
+The pipeline **clones the whole repo**, which contains more than one Dockerfile:
+
+- `dind-demo/Dockerfile`
+- `sample-app/app/Dockerfile`
+
+A `docker build .` at the repo root fails (`no such file or directory`) because there
+is no Dockerfile there. The `Find Dockerfile` step ([`find-dockerfile.sh`](./find-dockerfile.sh))
+solves this by scanning the repo and selecting one, in priority order:
+
+1. `DOCKERFILE_PATH` — an explicit path, if set
+2. `TARGET_DIR` — first Dockerfile under this directory (pipeline default: `dind-demo`)
+3. fallback — the single Dockerfile, only if exactly one exists
+
+It exports `DOCKERFILE` (the file) and `CONTEXT` (its directory) as step **output
+variables**, which the build step consumes:
+
+```bash
+docker build -f "$DOCKERFILE" ... "$CONTEXT"
+```
+
+To build a different image, change `TARGET_DIR` on the `Find Dockerfile` step
+(e.g. `sample-app/app`) — no other edits needed.
+
+Run it locally to see what it picks:
+
+```bash
+cd <repo-root>
+TARGET_DIR=dind-demo sh dind-demo/find-dockerfile.sh
+```
 
 ## Usage
 
