@@ -1,0 +1,29 @@
+# Harness Self-Hosted VM runner pool config.
+# This defines the "poolName" that the pipeline's VM infrastructure references.
+#
+# For a quick LOCAL test, the docker driver runs build VMs as containers on the
+# host Docker engine (your machine / the delegate host). poolName here is "dind-pool".
+#
+# Docs: https://developer.harness.io/docs/category/set-up-build-infrastructure
+version: "1"
+instances:
+  - name: dind-pool
+    default: true
+    type: vmfusion   # replace with your driver: amazon | google | azure | anka | vmfusion | nomad
+    pool: 1          # warm instances kept ready
+    limit: 4         # max concurrent
+    platform:
+      os: linux
+      arch: amd64
+    spec:
+      # --- Example for AWS driver (type: amazon). Adjust to your driver. ---
+      account:
+        region: us-east-1
+      ami: ami-xxxxxxxxxxxxx
+      size: t3.medium
+      hibernate: false
+      network:
+        security_groups:
+          - sg-xxxxxxxx
+      tags:
+        purpose: harness-ci-dind

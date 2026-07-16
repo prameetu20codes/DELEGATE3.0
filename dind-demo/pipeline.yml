@@ -1,0 +1,66 @@
+# Harness CI pipeline: DinD background step + Run step that builds & pushes to Docker Hub.
+# Self-hosted VM infrastructure is used because DinD requires a privileged container
+# (Harness Cloud does not allow privileged/DinD).
+#
+# Replace the <PLACEHOLDERS> before importing:
+#   <ORG>       - Harness org identifier (e.g. default)
+#   <PROJECT>   - Harness project identifier
+#   <POOL_NAME> - matches the `name:` in pool.yml (e.g. dind-pool)
+#   <REPO>      - Docker Hub repo under prameet2025 (e.g. myapp)
+pipeline:
+  identifier: dind_build_push
+  name: DinD Build and Push
+  orgIdentifier: <ORG>
+  projectIdentifier: <PROJECT>
+  tags: {}
+  stages:
+    - stage:
+        identifier: build_and_push
+        name: Build and Push
+        type: CI
+        spec:
+          cloneCodebase: false
+          infrastructure:
+            type: VM
+            spec:
+              type: Pool
+              spec:
+                poolName: <POOL_NAME>
+                os: Linux
+          sharedPaths:
+            - /var/run
+          execution:
+            steps:
+              - step:
+                  identifier: dind
+                  name: DinD Background
+                  type: Background
+                  spec:
+                    image: docker:dind
+                    shell: Sh
+                    entrypoint:
+                      - dockerd-entrypoint.sh
+                    privileged: true
+              - step:
+                  identifier: build_push
+                  name: Build and Push Image
+                  type: Run
+                  spec:
+                    image: docker:latest
+                    shell: Sh
+                    command: |
+                      until docker info >/dev/null 2>&1; do echo "waiting for docker..."; sleep 1; done
+                      echo "$DOCKER_PASSWORD" | docker login -u prameet2025 --password-stdin
+                      docker build --build-arg BUILD_TIME="$(date -u +%FT%TZ)" \
+                        -t prameet2025/<REPO>:<+pipeline.sequenceId> \
+                        -t prameet2025/<REPO>:latest .
+                      docker push prameet2025/<REPO>:<+pipeline.sequenceId>
+                      docker push prameet2025/<REPO>:latest
+                    envVariables:
+                      DOCKER_HOST: tcp://localhost:2375
+                      DOCKER_PASSWORD: <+secrets.getValue("docker_pat")>
+        failureStrategies:
+          - onFailure:
+              errors: [AllErrors]
+              action:
+                type: MarkAsFailure

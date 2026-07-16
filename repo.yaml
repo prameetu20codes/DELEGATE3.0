@@ -1,0 +1,932 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    checksum/cm: 6ea02ffb9c17fff3743559431369872f45bf4485d4203d9d8ec43f18d2aafb3e
+    checksum/cmd-params: ea2683e5e2c9928d13d7a06c9f361518a4854305f9163246c66002e5628ad23b
+    dynakube.dynatrace.com/injected: "true"
+    kubernetes.io/limit-ranger: 'LimitRanger plugin set: ephemeral-storage request
+      for init container dynatrace-operator; ephemeral-storage limit for init container
+      dynatrace-operator'
+    metadata-enrichment.dynatrace.com/injected: "true"
+    metadata.dynatrace.com: '{}'
+    metadata.dynatrace.com/k8s.workload.kind: deployment
+    metadata.dynatrace.com/k8s.workload.name: argocd-repo-server
+  creationTimestamp: "2026-07-08T19:05:35Z"
+  generateName: argocd-repo-server-767f4cc7b-
+  generation: 1
+  labels:
+    app.kubernetes.io/component: repo-server
+    app.kubernetes.io/instance: argocd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: argocd-repo-server
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/version: v3.3.10
+    helm.sh/chart: argo-cd-9.0.0
+    pod-template-hash: 767f4cc7b
+    topology.kubernetes.io/region: us-central1
+    topology.kubernetes.io/zone: us-central1-f
+  name: argocd-repo-server-767f4cc7b-rnc9s
+  namespace: default
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: argocd-repo-server-767f4cc7b
+    uid: 4261274d-f700-4ef1-96b5-e1ad989bef6b
+  resourceVersion: "1783537594180223003"
+  uid: dad3b2b3-9e6d-4ec5-a65f-0bd0b64195b4
+spec:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: argocd-repo-server
+          topologyKey: kubernetes.io/hostname
+        weight: 100
+  automountServiceAccountToken: true
+  containers:
+  - args:
+    - /usr/local/bin/argocd-repo-server
+    - --port=8081
+    - --metrics-port=8084
+    env:
+    - name: HELM_PLUGINS
+      value: /helm-sops-tools/helm-plugins/
+    - name: HELM_SECRETS_CURL_PATH
+      value: /helm-sops-tools/curl
+    - name: HELM_SECRETS_SOPS_PATH
+      value: /helm-sops-tools/sops
+    - name: HELM_SECRETS_KUBECTL_PATH
+      value: /helm-sops-tools/kubectl
+    - name: HELM_SECRETS_BACKEND
+      value: sops
+    - name: HELM_SECRETS_VALUES_ALLOW_SYMLINKS
+      value: "false"
+    - name: HELM_SECRETS_VALUES_ALLOW_ABSOLUTE_PATH
+      value: "true"
+    - name: HELM_SECRETS_VALUES_ALLOW_PATH_TRAVERSAL
+      value: "false"
+    - name: HELM_SECRETS_WRAPPER_ENABLED
+      value: "true"
+    - name: HELM_SECRETS_HELM_PATH
+      value: /usr/local/bin/helm
+    - name: PATH
+      value: /helm-sops-tools/helm-secrets:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    - name: ARGOCD_REPO_SERVER_NAME
+      value: argocd-repo-server
+    - name: ARGOCD_RECONCILIATION_TIMEOUT
+      valueFrom:
+        configMapKeyRef:
+          key: timeout.reconciliation
+          name: argocd-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_LOGFORMAT
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.log.format
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_LOGLEVEL
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.log.level
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_LOG_FORMAT_TIMESTAMP
+      valueFrom:
+        configMapKeyRef:
+          key: log.format.timestamp
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_PARALLELISM_LIMIT
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.parallelism.limit
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_LISTEN_ADDRESS
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.listen.address
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_LISTEN_METRICS_ADDRESS
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.metrics.listen.address
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_DISABLE_TLS
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.disable.tls
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_TLS_MIN_VERSION
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.tls.minversion
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_TLS_MAX_VERSION
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.tls.maxversion
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_TLS_CIPHERS
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.tls.ciphers
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_CACHE_EXPIRATION
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.repo.cache.expiration
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: REDIS_SERVER
+      valueFrom:
+        configMapKeyRef:
+          key: redis.server
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: REDIS_COMPRESSION
+      valueFrom:
+        configMapKeyRef:
+          key: redis.compression
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: REDISDB
+      valueFrom:
+        configMapKeyRef:
+          key: redis.db
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: REDIS_USERNAME
+      valueFrom:
+        secretKeyRef:
+          key: redis-username
+          name: argocd-redis
+          optional: true
+    - name: REDIS_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: auth
+          name: argocd-redis
+          optional: false
+    - name: REDIS_SENTINEL_USERNAME
+      valueFrom:
+        secretKeyRef:
+          key: redis-sentinel-username
+          name: argocd-redis
+          optional: true
+    - name: REDIS_SENTINEL_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: redis-sentinel-password
+          name: argocd-redis
+          optional: true
+    - name: ARGOCD_DEFAULT_CACHE_EXPIRATION
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.default.cache.expiration
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_OTLP_ADDRESS
+      valueFrom:
+        configMapKeyRef:
+          key: otlp.address
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_OTLP_INSECURE
+      valueFrom:
+        configMapKeyRef:
+          key: otlp.insecure
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_OTLP_HEADERS
+      valueFrom:
+        configMapKeyRef:
+          key: otlp.headers
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_OTLP_ATTRS
+      valueFrom:
+        configMapKeyRef:
+          key: otlp.attrs
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_MAX_COMBINED_DIRECTORY_MANIFESTS_SIZE
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.max.combined.directory.manifests.size
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_PLUGIN_TAR_EXCLUSIONS
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.plugin.tar.exclusions
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_PLUGIN_USE_MANIFEST_GENERATE_PATHS
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.plugin.use.manifest.generate.paths
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_ALLOW_OUT_OF_BOUNDS_SYMLINKS
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.allow.oob.symlinks
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_STREAMED_MANIFEST_MAX_TAR_SIZE
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.streamed.manifest.max.tar.size
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_STREAMED_MANIFEST_MAX_EXTRACTED_SIZE
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.streamed.manifest.max.extracted.size
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_HELM_MANIFEST_MAX_EXTRACTED_SIZE
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.helm.manifest.max.extracted.size
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_DISABLE_HELM_MANIFEST_MAX_EXTRACTED_SIZE
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.disable.helm.manifest.max.extracted.size
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_GIT_MODULES_ENABLED
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.enable.git.submodule
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_GIT_LS_REMOTE_PARALLELISM_LIMIT
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.git.lsremote.parallelism.limit
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_GIT_REQUEST_TIMEOUT
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.git.request.timeout
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_OCI_MANIFEST_MAX_EXTRACTED_SIZE
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.oci.manifest.max.extracted.size
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_DISABLE_OCI_MANIFEST_MAX_EXTRACTED_SIZE
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.disable.oci.manifest.max.extracted.size
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_OCI_LAYER_MEDIA_TYPES
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.oci.layer.media.types
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REVISION_CACHE_LOCK_TIMEOUT
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.revision.cache.lock.timeout
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: ARGOCD_REPO_SERVER_INCLUDE_HIDDEN_DIRECTORIES
+      valueFrom:
+        configMapKeyRef:
+          key: reposerver.include.hidden.directories
+          name: argocd-cmd-params-cm
+          optional: true
+    - name: HELM_CACHE_HOME
+      value: /helm-working-dir
+    - name: HELM_CONFIG_HOME
+      value: /helm-working-dir
+    - name: HELM_DATA_HOME
+      value: /helm-working-dir
+    image: docker.io/harness/argocd:v3.3.10
+    imagePullPolicy: Always
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthz?full=true
+        port: metrics
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    name: repo-server
+    ports:
+    - containerPort: 8081
+      name: repo-server
+      protocol: TCP
+    - containerPort: 8084
+      name: metrics
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthz
+        port: metrics
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources:
+      limits:
+        cpu: "2"
+        ephemeral-storage: 2Gi
+        memory: 3Gi
+      requests:
+        cpu: "1"
+        ephemeral-storage: 1Gi
+        memory: 3Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /helm-sops-tools
+      name: helm-sops-tools
+    - mountPath: /app/config/ssh
+      name: ssh-known-hosts
+    - mountPath: /app/config/tls
+      name: tls-certs
+    - mountPath: /app/config/gpg/source
+      name: gpg-keys
+    - mountPath: /app/config/gpg/keys
+      name: gpg-keyring
+    - mountPath: /app/config/reposerver/tls
+      name: argocd-repo-server-tls
+    - mountPath: /helm-working-dir
+      name: helm-working-dir
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+    - mountPath: /var/lib/dynatrace
+      name: dynatrace-config
+      subPath: repo-server
+  - command:
+    - /var/run/argocd/argocd-cmp-server
+    image: docker.io/harness/gitops-agent-installer-helper:v0.0.16
+    imagePullPolicy: IfNotPresent
+    name: argocd-harness-plugin
+    resources:
+      limits:
+        cpu: 500m
+        ephemeral-storage: 2Gi
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        ephemeral-storage: 1Gi
+        memory: 512Mi
+    securityContext:
+      capabilities:
+        drop:
+        - NET_RAW
+      runAsGroup: 999
+      runAsUser: 999
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+      name: argocd-harness-plugin
+      subPath: harness.yaml
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+    - mountPath: /var/lib/dynatrace
+      name: dynatrace-config
+      subPath: argocd-harness-plugin
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  initContainers:
+  - command:
+    - /bin/cp
+    - -n
+    - /usr/local/bin/argocd
+    - /var/run/argocd/argocd-cmp-server
+    image: docker.io/harness/argocd:v3.3.10
+    imagePullPolicy: Always
+    name: copyutil
+    resources:
+      limits:
+        cpu: "2"
+        ephemeral-storage: 2Gi
+        memory: 3Gi
+      requests:
+        cpu: "1"
+        ephemeral-storage: 1Gi
+        memory: 3Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+  - args:
+    - |
+      cp -r /custom-tools/. /helm-sops-tools
+      cp /helm-sops-tools/helm-plugins/helm-secrets/scripts/wrapper/helm.sh /helm-sops-tools/helm
+      mkdir -p /helm-sops-tools/helm-secrets && cp /helm-sops-tools/helm-plugins/helm-secrets/scripts/wrapper/helm.sh /helm-sops-tools/helm-secrets/helm
+      chmod +x /helm-sops-tools/helm-secrets/*
+      chmod +x /helm-sops-tools/*
+    command:
+    - sh
+    - -ec
+    image: docker.io/harness/gitops-agent-installer-helper:v0.0.16
+    imagePullPolicy: IfNotPresent
+    name: sops-helm-secrets-tool
+    resources:
+      limits:
+        cpu: 500m
+        ephemeral-storage: 2Gi
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        ephemeral-storage: 1Gi
+        memory: 512Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /helm-sops-tools
+      name: helm-sops-tools
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+  - args:
+    - bootstrap
+    - --config-directory=/mnt/config
+    - --input-directory=/mnt/input
+    - --suppress-error
+    - --attribute=k8s.workload.kind=deployment
+    - --attribute=k8s.workload.name=argocd-repo-server
+    - --attribute=dt.kubernetes.workload.kind=deployment
+    - --attribute=dt.kubernetes.workload.name=argocd-repo-server
+    - --metadata-enrichment
+    - --attribute-container={"container_image.registry":"docker.io","container_image.repository":"harness/argocd","container_image.tags":"v3.3.10","k8s.container.name":"repo-server"}
+    - --attribute-container={"container_image.registry":"docker.io","container_image.repository":"harness/gitops-agent-installer-helper","container_image.tags":"v0.0.16","k8s.container.name":"argocd-harness-plugin"}
+    - --attribute=k8s.pod.uid=$(K8S_PODUID)
+    - --attribute=k8s.node.name=$(K8S_NODE_NAME)
+    - --attribute=k8s.namespace.name=default
+    - --attribute=k8s.cluster.uid=b12df07a-a80f-48e1-8406-b8690759668a
+    - --attribute=k8s.cluster.name=gke-k8s-2026-02-19-1771474806
+    - --attribute=dt.entity.kubernetes_cluster=KUBERNETES_CLUSTER-99A46E2DA0DDB1CD
+    - --attribute=k8s.pod.name=$(K8S_PODNAME)
+    - --attribute=dt.kubernetes.cluster.id=b12df07a-a80f-48e1-8406-b8690759668a
+    env:
+    - name: K8S_PODNAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: K8S_PODUID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: spec.nodeName
+    image: public.ecr.aws/dynatrace/dynatrace-operator:v1.8.1
+    imagePullPolicy: IfNotPresent
+    name: dynatrace-operator
+    resources:
+      limits:
+        cpu: 100m
+        ephemeral-storage: 2Gi
+        memory: 60Mi
+      requests:
+        cpu: 30m
+        ephemeral-storage: 1Gi
+        memory: 30Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      privileged: false
+      readOnlyRootFilesystem: true
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /mnt/config
+      name: dynatrace-config
+    - mountPath: /mnt/input
+      name: dynatrace-input
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+  nodeName: gke-harness-test-default-pool-a7b4ef23-utzj
+  nodeSelector:
+    kubernetes.io/os: linux
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: argocd-repo-server
+  serviceAccountName: argocd-repo-server
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - emptyDir: {}
+    name: helm-sops-tools
+  - configMap:
+      defaultMode: 420
+      name: argocd-harness-plugin
+    name: argocd-harness-plugin
+  - emptyDir: {}
+    name: helm-working-dir
+  - emptyDir: {}
+    name: plugins
+  - emptyDir: {}
+    name: var-files
+  - emptyDir: {}
+    name: tmp
+  - configMap:
+      defaultMode: 420
+      name: argocd-ssh-known-hosts-cm
+    name: ssh-known-hosts
+  - configMap:
+      defaultMode: 420
+      name: argocd-tls-certs-cm
+    name: tls-certs
+  - configMap:
+      defaultMode: 420
+      name: argocd-gpg-keys-cm
+    name: gpg-keys
+  - emptyDir: {}
+    name: gpg-keyring
+  - name: argocd-repo-server-tls
+    secret:
+      defaultMode: 420
+      items:
+      - key: tls.crt
+        path: tls.crt
+      - key: tls.key
+        path: tls.key
+      - key: ca.crt
+        path: ca.crt
+      optional: true
+      secretName: argocd-repo-server-tls
+  - name: kube-api-access-2hgs5
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+  - name: dynatrace-input
+    projected:
+      defaultMode: 420
+      sources:
+      - secret:
+          name: dynatrace-bootstrapper-config
+          optional: false
+      - secret:
+          name: dynatrace-bootstrapper-certs
+          optional: true
+  - emptyDir: {}
+    name: dynatrace-config
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-07-08T19:05:55Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2026-07-08T19:06:22Z"
+    observedGeneration: 1
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2026-07-08T19:06:34Z"
+    observedGeneration: 1
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2026-07-08T19:06:34Z"
+    observedGeneration: 1
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2026-07-08T19:05:35Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - allocatedResources:
+      cpu: 500m
+      ephemeral-storage: 1Gi
+      memory: 512Mi
+    containerID: containerd://8080bb7008c24fd5f9039758abec35791403bcda405b149a8c06356edc1ce1ae
+    image: docker.io/harness/gitops-agent-installer-helper:v0.0.16
+    imageID: docker.io/harness/gitops-agent-installer-helper@sha256:a2d8afe2e7006665cc8bfa8c34a26bec5a13afe184fd1af9b65351bb8e3d0e1c
+    lastState: {}
+    name: argocd-harness-plugin
+    ready: true
+    resources:
+      limits:
+        cpu: 500m
+        ephemeral-storage: 2Gi
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        ephemeral-storage: 1Gi
+        memory: 512Mi
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2026-07-08T19:06:22Z"
+    user:
+      linux:
+        gid: 999
+        supplementalGroups:
+        - 999
+        uid: 999
+    volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+      name: argocd-harness-plugin
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/lib/dynatrace
+      name: dynatrace-config
+  - allocatedResources:
+      cpu: "1"
+      ephemeral-storage: 1Gi
+      memory: 3Gi
+    containerID: containerd://6c141c35079c846ad27769d8d1b89550395a66cb34fb15212f484746ad9df7c3
+    image: docker.io/harness/argocd:v3.3.10
+    imageID: docker.io/harness/argocd@sha256:05d68bf224df7cd39713012c19226a33c374f2f3bd65df7b9088349e4ac3e6a2
+    lastState: {}
+    name: repo-server
+    ready: true
+    resources:
+      limits:
+        cpu: "2"
+        ephemeral-storage: 2Gi
+        memory: 3Gi
+      requests:
+        cpu: "1"
+        ephemeral-storage: 1Gi
+        memory: 3Gi
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2026-07-08T19:06:22Z"
+    user:
+      linux:
+        gid: 999
+        supplementalGroups:
+        - 999
+        uid: 999
+    volumeMounts:
+    - mountPath: /helm-sops-tools
+      name: helm-sops-tools
+    - mountPath: /app/config/ssh
+      name: ssh-known-hosts
+    - mountPath: /app/config/tls
+      name: tls-certs
+    - mountPath: /app/config/gpg/source
+      name: gpg-keys
+    - mountPath: /app/config/gpg/keys
+      name: gpg-keyring
+    - mountPath: /app/config/reposerver/tls
+      name: argocd-repo-server-tls
+    - mountPath: /helm-working-dir
+      name: helm-working-dir
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/lib/dynatrace
+      name: dynatrace-config
+  hostIP: 10.128.0.21
+  hostIPs:
+  - ip: 10.128.0.21
+  initContainerStatuses:
+  - allocatedResources:
+      cpu: "1"
+      ephemeral-storage: 1Gi
+      memory: 3Gi
+    containerID: containerd://6dc23c260113ad5141156e196d1d9a67081a194a4e7151388a07275744c44bd7
+    image: docker.io/harness/argocd:v3.3.10
+    imageID: docker.io/harness/argocd@sha256:05d68bf224df7cd39713012c19226a33c374f2f3bd65df7b9088349e4ac3e6a2
+    lastState: {}
+    name: copyutil
+    ready: true
+    resources:
+      limits:
+        cpu: "2"
+        ephemeral-storage: 2Gi
+        memory: 3Gi
+      requests:
+        cpu: "1"
+        ephemeral-storage: 1Gi
+        memory: 3Gi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://6dc23c260113ad5141156e196d1d9a67081a194a4e7151388a07275744c44bd7
+        exitCode: 0
+        finishedAt: "2026-07-08T19:05:54Z"
+        reason: Completed
+        startedAt: "2026-07-08T19:05:54Z"
+    user:
+      linux:
+        gid: 999
+        supplementalGroups:
+        - 999
+        uid: 999
+    volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+      recursiveReadOnly: Disabled
+  - allocatedResources:
+      cpu: 500m
+      ephemeral-storage: 1Gi
+      memory: 512Mi
+    containerID: containerd://9b829712ce662a9d29bff4cbbfae55226d2b200572255bfe7b996404756cfb1f
+    image: docker.io/harness/gitops-agent-installer-helper:v0.0.16
+    imageID: docker.io/harness/gitops-agent-installer-helper@sha256:a2d8afe2e7006665cc8bfa8c34a26bec5a13afe184fd1af9b65351bb8e3d0e1c
+    lastState: {}
+    name: sops-helm-secrets-tool
+    ready: true
+    resources:
+      limits:
+        cpu: 500m
+        ephemeral-storage: 2Gi
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        ephemeral-storage: 1Gi
+        memory: 512Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://9b829712ce662a9d29bff4cbbfae55226d2b200572255bfe7b996404756cfb1f
+        exitCode: 0
+        finishedAt: "2026-07-08T19:06:10Z"
+        reason: Completed
+        startedAt: "2026-07-08T19:06:10Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        uid: 999
+    volumeMounts:
+    - mountPath: /helm-sops-tools
+      name: helm-sops-tools
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+      recursiveReadOnly: Disabled
+  - allocatedResources:
+      cpu: 30m
+      ephemeral-storage: 1Gi
+      memory: 30Mi
+    containerID: containerd://4c77ab1e77df9fed615849a67b83c2f46df94af3883104b5ccde656bbc8f3c86
+    image: public.ecr.aws/dynatrace/dynatrace-operator:v1.8.1
+    imageID: public.ecr.aws/dynatrace/dynatrace-operator@sha256:aee68816f3d37d02df1f2afb5898153dbcb9b34274e2bf98b4429bdc77774c28
+    lastState: {}
+    name: dynatrace-operator
+    ready: true
+    resources:
+      limits:
+        cpu: 100m
+        ephemeral-storage: 2Gi
+        memory: 60Mi
+      requests:
+        cpu: 30m
+        ephemeral-storage: 1Gi
+        memory: 30Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://4c77ab1e77df9fed615849a67b83c2f46df94af3883104b5ccde656bbc8f3c86
+        exitCode: 0
+        finishedAt: "2026-07-08T19:06:21Z"
+        reason: Completed
+        startedAt: "2026-07-08T19:06:21Z"
+    user:
+      linux:
+        gid: 1001
+        supplementalGroups:
+        - 1001
+        uid: 1001
+    volumeMounts:
+    - mountPath: /mnt/config
+      name: dynatrace-config
+    - mountPath: /mnt/input
+      name: dynatrace-input
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2hgs5
+      readOnly: true
+      recursiveReadOnly: Disabled
+  observedGeneration: 1
+  phase: Running
+  podIP: 10.4.2.6
+  podIPs:
+  - ip: 10.4.2.6
+  qosClass: Burstable
+  startTime: "2026-07-08T19:05:35Z"
