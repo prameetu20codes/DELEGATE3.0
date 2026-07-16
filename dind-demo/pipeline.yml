@@ -57,15 +57,18 @@ pipeline:
                     envVariables:
                       DOCKER_TLS_CERTDIR: ""
               - step:
-                  identifier: find_dockerfile
-                  name: Find Dockerfile
+                  identifier: build_push
+                  name: Build and Push Image
                   type: Run
                   spec:
-                    image: alpine:3.20
+                    image: docker:latest
                     shell: Sh
                     envVariables:
                       TARGET_DIR: dind-demo
+                      DOCKER_HOST: tcp://localhost:2375
+                      DOCKER_PASSWORD: <+secrets.getValue("docker_pat")>
                     command: |
+                      # --- locate the Dockerfile to build (repo has many) ---
                       ALL=$(find . -type f \
                               \( -iname 'Dockerfile' -o -iname 'Dockerfile.*' -o -iname '*.dockerfile' \) \
                               -not -path './.git/*' | sed 's|^\./||' | sort)
@@ -76,23 +79,11 @@ pipeline:
                       fi
                       CONTEXT=$(dirname "$DOCKERFILE")
                       echo "Selected: $DOCKERFILE (context: $CONTEXT)"
-                      export DOCKERFILE
-                      export CONTEXT
-                    outputVariables:
-                      - name: DOCKERFILE
-                      - name: CONTEXT
-              - step:
-                  identifier: build_push
-                  name: Build and Push Image
-                  type: Run
-                  spec:
-                    image: docker:latest
-                    shell: Sh
-                    command: |
+
+                      # --- wait for the DinD daemon ---
                       until docker info >/dev/null 2>&1; do echo "waiting for docker..."; sleep 1; done
-                      DOCKERFILE="<+steps.find_dockerfile.output.outputVariables.DOCKERFILE>"
-                      CONTEXT="<+steps.find_dockerfile.output.outputVariables.CONTEXT>"
-                      echo "Building $DOCKERFILE (context: $CONTEXT)"
+
+                      # --- login, build, push ---
                       echo "$DOCKER_PASSWORD" | docker login -u prameet2025 --password-stdin
                       docker build --build-arg BUILD_TIME="$(date -u +%FT%TZ)" \
                         -f "$DOCKERFILE" \
@@ -101,9 +92,6 @@ pipeline:
                         "$CONTEXT"
                       docker push prameet2025/dind-test:<+pipeline.sequenceId>
                       docker push prameet2025/dind-test:latest
-                    envVariables:
-                      DOCKER_HOST: tcp://localhost:2375
-                      DOCKER_PASSWORD: <+secrets.getValue("docker_pat")>
         failureStrategies:
           - onFailure:
               errors: [AllErrors]

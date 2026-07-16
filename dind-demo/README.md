@@ -109,22 +109,19 @@ The pipeline **clones the whole repo**, which contains more than one Dockerfile:
 - `sample-app/app/Dockerfile`
 
 A `docker build .` at the repo root fails (`no such file or directory`) because there
-is no Dockerfile there. The `Find Dockerfile` step ([`find-dockerfile.sh`](./find-dockerfile.sh))
-solves this by scanning the repo and selecting one, in priority order:
-
-1. `DOCKERFILE_PATH` — an explicit path, if set
-2. `TARGET_DIR` — first Dockerfile under this directory (pipeline default: `dind-demo`)
-3. fallback — the single Dockerfile, only if exactly one exists
-
-It exports `DOCKERFILE` (the file) and `CONTEXT` (its directory) as step **output
-variables**, which the build step consumes:
+is no Dockerfile there. Discovery is built **into the Build and Push step itself**: it
+scans the repo and selects a Dockerfile under `TARGET_DIR` (pipeline default:
+`dind-demo`), derives the build context, then builds:
 
 ```bash
 docker build -f "$DOCKERFILE" ... "$CONTEXT"
 ```
 
-To build a different image, change `TARGET_DIR` on the `Find Dockerfile` step
+To build a different image, change the `TARGET_DIR` env var on the Build and Push step
 (e.g. `sample-app/app`) — no other edits needed.
+
+The standalone [`find-dockerfile.sh`](./find-dockerfile.sh) contains the same logic
+(with an extra `DOCKERFILE_PATH` override) for running the discovery locally.
 
 Run it locally to see what it picks:
 
